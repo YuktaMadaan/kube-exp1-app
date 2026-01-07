@@ -2,30 +2,35 @@ name: CI/CD with GitOps
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Build Docker image
-      run: docker build -t myapp:${{ github.sha }} .
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
     - name: Login to DockerHub
-      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login \
-           -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+      run: |
+        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login \
+        -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.sha }} .
 
     - name: Push Docker image
-      run: docker push myapp:${{ github.sha }}
-
-    - name: Update deployment file
       run: |
-        sed -i "s|image:.*|image: myapp:${{ github.sha }}|" k8s/deployment.yaml
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.sha }}
+
+    - name: Update Kubernetes deployment file
+      run: |
+        sed -i "s|image:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/myapp:${{ github.sha }}|" k8s/deployment.yaml
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
         git add k8s/deployment.yaml
-        git commit -m "Update image tag"
+        git commit -m "Update image to ${{ github.sha }}"
         git push

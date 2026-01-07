@@ -14,7 +14,6 @@ spec:
     spec:
       containers:
       - name: myapp
-        image: myapp:latest
+        image: yuktamadaan/myapp:latest
         ports:
         - containerPort: 3000
-
