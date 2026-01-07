@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: myapp
-        image: yukta282003/myapp:5b78cea088856c3477c6a4e20381d1877c717ffb
+        image: yukta282003/myapp:71a9a4bb5d355a3a7bd1a7c371668249773f5b2c
         ports:
         - containerPort: 3000
