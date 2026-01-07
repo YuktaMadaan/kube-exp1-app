@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write   # ⭐ VERY IMPORTANT (allows git push)
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,6 +15,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0   # ⭐ REQUIRED for git pull --rebase
 
     - name: Login to DockerHub
       run: |
@@ -32,5 +37,6 @@ jobs:
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
         git add k8s/deployment.yaml
-        git commit -m "Update image to ${{ github.sha }}"
-        git push
+        git commit -m "Update image to ${{ github.sha }}" || echo "No changes to commit"
+        git pull --rebase origin main
+        git push origin main
